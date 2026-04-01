@@ -298,6 +298,23 @@ binarylane-grafana/
 
 ---
 
+## Documentation
+
+Full tutorial documentation is in [`docs/`](docs/):
+
+| Doc | What it covers |
+|-----|----------------|
+| [How it works](docs/01-how-it-works.md) | Infinity architecture, auth, backend parser |
+| [Setup](docs/02-setup.md) | Token, datasource config, connection testing |
+| [Server metrics](docs/03-server-metrics.md) | CPU, network, storage, memory, resolution system |
+| [Fleet overview](docs/04-fleet-overview.md) | Inventory, transfer pooling, joins |
+| [Billing](docs/05-billing.md) | Balance, charges, invoices, account status |
+| [Alerts & Actions](docs/06-alerts-actions.md) | Threshold alerts, action audit log |
+| [Variables & Filters](docs/07-variables-filters.md) | Dropdowns, filters, transformations |
+| [Limitations](docs/08-limitations.md) | Everything that doesn't work and why |
+
+---
+
 ## Further Reading
 
 - [BinaryLane API reference](https://api.binarylane.com.au/reference/)
