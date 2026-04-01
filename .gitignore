@@ -1,0 +1,10 @@
+# Local env — contains BL_API_TOKEN
+.env
+
+# Grafana persistent data
+grafana-data/
+
+# OS
+.DS_Store
+Thumbs.db
+

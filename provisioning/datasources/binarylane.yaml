@@ -1,0 +1,22 @@
+apiVersion: 1
+
+datasources:
+  - name: BinaryLane
+    type: yesoreyeram-infinity-datasource
+    uid: binarylane-infinity
+    access: proxy
+    isDefault: false
+    url: https://api.binarylane.com.au
+    jsonData:
+      auth_method: bearerToken
+      # Allowlist required by Infinity security model
+      allowedHosts:
+        - https://api.binarylane.com.au
+      oauthPassThru: false
+      tlsSkipVerify: false
+    secureJsonData:
+      # Set BL_API_TOKEN in your environment / .env file
+      # Generate a token at: https://home.binarylane.com.au/api-info
+      bearerToken: "${BL_API_TOKEN}"
+    version: 1
+    editable: true

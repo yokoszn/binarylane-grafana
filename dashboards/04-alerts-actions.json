@@ -1,0 +1,307 @@
+{
+  "__inputs": [{ "name": "DS_BINARYLANE", "label": "BinaryLane", "type": "datasource", "pluginId": "yesoreyeram-infinity-datasource" }],
+  "__requires": [
+    { "type": "grafana", "id": "grafana", "name": "Grafana", "version": "10.0.0" },
+    { "type": "datasource", "id": "yesoreyeram-infinity-datasource", "name": "Infinity", "version": "2.0.0" },
+    { "type": "panel", "id": "stat", "name": "Stat", "version": "" },
+    { "type": "panel", "id": "table", "name": "Table", "version": "" }
+  ],
+  "annotations": { "list": [] },
+  "description": "Threshold alert states across all servers, and a full actions audit log with in-progress and errored action visibility.",
+  "editable": true,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [{ "title": "BinaryLane mPanel", "type": "link", "url": "https://home.binarylane.com.au", "targetBlank": true, "icon": "external link" }],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100, "title": "🚨 Threshold Alerts", "type": "row"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+      "description": "Number of servers currently exceeding at least one threshold alert. Zero is good.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" }, "unit": "short", "decimals": 0,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] },
+          "noValue": "0"
+        }
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "id": 1,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^Count$/", "values": false }, "textMode": "value_and_name" },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+        "type": "json", "source": "url", "format": "table",
+        "url": "https://api.binarylane.com.au/v2/servers/threshold_alerts",
+        "root_selector": "",
+        "json_options": { "root_is_not_array": true, "columnar": false },
+        "columns": [{ "selector": "server_ids.#", "text": "Count", "type": "number" }],
+        "url_options": { "method": "GET", "data": "" }, "parser": "backend", "filters": []
+      }],
+      "title": "Servers Exceeding Alerts",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+      "description": "Threshold alerts configured for the selected server, with current measured values vs the alert threshold. Alert types: cpu (%), storage-requests (IOPS avg), network-incoming/outgoing (kbps), data-transfer-used (%), storage-used (%), memory-used (%)",
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "filterable": true } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Enabled" }, "properties": [
+            { "id": "mappings", "value": [
+              { "type": "value", "options": { "true": { "color": "green", "index": 0, "text": "✓ Enabled" } } },
+              { "type": "value", "options": { "false": { "color": "text", "index": 1, "text": "— Disabled" } } }
+            ]},
+            { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+            { "id": "custom.width", "value": 110 }
+          ]},
+          { "matcher": { "id": "byName", "options": "Alert Type" }, "properties": [{ "id": "custom.width", "value": 160 }] },
+          { "matcher": { "id": "byName", "options": "Threshold Value" }, "properties": [{ "id": "custom.width", "value": 140 }] },
+          { "matcher": { "id": "byName", "options": "Current Value" }, "properties": [{ "id": "custom.width", "value": 130 }] },
+          { "matcher": { "id": "byName", "options": "Last Raised" }, "properties": [{ "id": "unit", "value": "dateTimeAsLocal" }, { "id": "custom.width", "value": 180 }] },
+          { "matcher": { "id": "byName", "options": "Last Cleared" }, "properties": [{ "id": "unit", "value": "dateTimeAsLocal" }, { "id": "custom.width", "value": 180 }] }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 18, "x": 6, "y": 1 },
+      "id": 2,
+      "options": { "cellHeight": "sm", "footer": { "show": false }, "showHeader": true },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+        "type": "json", "source": "url", "format": "table",
+        "url": "https://api.binarylane.com.au/v2/servers/${server_id}/threshold_alerts",
+        "root_selector": "threshold_alerts",
+        "columns": [
+          { "selector": "alert_type", "text": "Alert Type", "type": "string" },
+          { "selector": "enabled", "text": "Enabled", "type": "boolean" },
+          { "selector": "value", "text": "Threshold Value", "type": "number" },
+          { "selector": "current_value", "text": "Current Value", "type": "number" },
+          { "selector": "last_raised", "text": "Last Raised", "type": "timestamp" },
+          { "selector": "last_cleared", "text": "Last Cleared", "type": "timestamp" }
+        ],
+        "url_options": { "method": "GET", "data": "" }, "parser": "backend", "filters": []
+      }],
+      "title": "Threshold Alerts — ${server_id}",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 11 },
+      "id": 101, "title": "📋 Actions Audit Log", "type": "row"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+      "description": "Actions currently in progress across the account.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" }, "unit": "short", "decimals": 0,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] },
+          "noValue": "0"
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 12 },
+      "id": 3,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto",
+        "reduceOptions": { "calcs": ["count"], "fields": "/^id$/", "values": false }, "textMode": "value_and_name" },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+        "type": "json", "source": "url", "format": "table",
+        "url": "https://api.binarylane.com.au/v2/actions?per_page=200",
+        "root_selector": "actions",
+        "columns": [
+          { "selector": "id", "text": "id", "type": "number" },
+          { "selector": "status", "text": "status", "type": "string" }
+        ],
+        "url_options": { "method": "GET", "data": "" }, "parser": "backend", "filters": []
+      }],
+      "transformations": [{
+        "id": "filterByValue",
+        "options": {
+          "type": "include", "match": "all",
+          "filters": [{ "fieldName": "status", "config": { "id": "equal", "options": { "value": "in-progress" } } }]
+        }
+      }],
+      "title": "In Progress",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+      "description": "Actions that ended with an error in the most recent page of results.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" }, "unit": "short", "decimals": 0,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] },
+          "noValue": "0"
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 12 },
+      "id": 4,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto",
+        "reduceOptions": { "calcs": ["count"], "fields": "/^id$/", "values": false }, "textMode": "value_and_name" },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+        "type": "json", "source": "url", "format": "table",
+        "url": "https://api.binarylane.com.au/v2/actions?per_page=200",
+        "root_selector": "actions",
+        "columns": [
+          { "selector": "id", "text": "id", "type": "number" },
+          { "selector": "status", "text": "status", "type": "string" }
+        ],
+        "url_options": { "method": "GET", "data": "" }, "parser": "backend", "filters": []
+      }],
+      "transformations": [{
+        "id": "filterByValue",
+        "options": {
+          "type": "include", "match": "all",
+          "filters": [{ "fieldName": "status", "config": { "id": "equal", "options": { "value": "errored" } } }]
+        }
+      }],
+      "title": "Errored (recent)",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+      "description": "Most recent 200 actions across the account. For per-server actions, use the server_id variable to filter.",
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "filterable": true } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Status" }, "properties": [
+            { "id": "mappings", "value": [
+              { "type": "value", "options": { "completed": { "color": "green", "index": 0, "text": "✓ completed" } } },
+              { "type": "value", "options": { "in-progress": { "color": "blue", "index": 1, "text": "⟳ in-progress" } } },
+              { "type": "value", "options": { "errored": { "color": "red", "index": 2, "text": "✕ errored" } } }
+            ]},
+            { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+            { "id": "custom.width", "value": 130 }
+          ]},
+          { "matcher": { "id": "byName", "options": "Started" }, "properties": [{ "id": "unit", "value": "dateTimeAsLocal" }, { "id": "custom.width", "value": 180 }] },
+          { "matcher": { "id": "byName", "options": "Completed" }, "properties": [{ "id": "unit", "value": "dateTimeAsLocal" }, { "id": "custom.width", "value": 180 }] },
+          { "matcher": { "id": "byName", "options": "Progress %" }, "properties": [
+            { "id": "custom.width", "value": 100 },
+            { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic" } },
+            { "id": "min", "value": 0 }, { "id": "max", "value": 100 },
+            { "id": "thresholds", "value": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }, { "color": "green", "value": 100 }] } }
+          ]},
+          { "matcher": { "id": "byName", "options": "Type" }, "properties": [{ "id": "custom.width", "value": 160 }] },
+          { "matcher": { "id": "byName", "options": "Resource Type" }, "properties": [{ "id": "custom.width", "value": 120 }] }
+        ]
+      },
+      "gridPos": { "h": 14, "w": 24, "x": 0, "y": 16 },
+      "id": 5,
+      "options": { "cellHeight": "sm", "footer": { "show": false }, "showHeader": true, "sortBy": [{ "desc": true, "displayName": "Started" }] },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+        "type": "json", "source": "url", "format": "table",
+        "url": "https://api.binarylane.com.au/v2/actions?per_page=200",
+        "root_selector": "actions",
+        "columns": [
+          { "selector": "id", "text": "ID", "type": "number" },
+          { "selector": "type", "text": "Type", "type": "string" },
+          { "selector": "status", "text": "Status", "type": "string" },
+          { "selector": "title", "text": "Title", "type": "string" },
+          { "selector": "reason", "text": "Reason", "type": "string" },
+          { "selector": "resource_type", "text": "Resource Type", "type": "string" },
+          { "selector": "resource_id", "text": "Resource ID", "type": "number" },
+          { "selector": "progress.percent_complete", "text": "Progress %", "type": "number" },
+          { "selector": "progress.current_step", "text": "Current Step", "type": "string" },
+          { "selector": "started_at", "text": "Started", "type": "timestamp" },
+          { "selector": "completed_at", "text": "Completed", "type": "timestamp" }
+        ],
+        "url_options": { "method": "GET", "data": "" }, "parser": "backend", "filters": []
+      }],
+      "title": "Recent Actions (all account)",
+      "type": "table"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+      "description": "Actions for the selected server only.",
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "filterable": true } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Status" }, "properties": [
+            { "id": "mappings", "value": [
+              { "type": "value", "options": { "completed": { "color": "green", "index": 0, "text": "✓ completed" } } },
+              { "type": "value", "options": { "in-progress": { "color": "blue", "index": 1, "text": "⟳ in-progress" } } },
+              { "type": "value", "options": { "errored": { "color": "red", "index": 2, "text": "✕ errored" } } }
+            ]},
+            { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+            { "id": "custom.width", "value": 130 }
+          ]},
+          { "matcher": { "id": "byName", "options": "Started" }, "properties": [{ "id": "unit", "value": "dateTimeAsLocal" }, { "id": "custom.width", "value": 180 }] },
+          { "matcher": { "id": "byName", "options": "Completed" }, "properties": [{ "id": "unit", "value": "dateTimeAsLocal" }, { "id": "custom.width", "value": 180 }] },
+          { "matcher": { "id": "byName", "options": "Progress %" }, "properties": [
+            { "id": "custom.width", "value": 100 },
+            { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic" } },
+            { "id": "min", "value": 0 }, { "id": "max", "value": 100 },
+            { "id": "thresholds", "value": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }, { "color": "green", "value": 100 }] } }
+          ]}
+        ]
+      },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 30 },
+      "id": 6,
+      "options": { "cellHeight": "sm", "footer": { "show": false }, "showHeader": true, "sortBy": [{ "desc": true, "displayName": "Started" }] },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+        "type": "json", "source": "url", "format": "table",
+        "url": "https://api.binarylane.com.au/v2/servers/${server_id}/actions?per_page=200",
+        "root_selector": "actions",
+        "columns": [
+          { "selector": "id", "text": "ID", "type": "number" },
+          { "selector": "type", "text": "Type", "type": "string" },
+          { "selector": "status", "text": "Status", "type": "string" },
+          { "selector": "title", "text": "Title", "type": "string" },
+          { "selector": "reason", "text": "Reason", "type": "string" },
+          { "selector": "progress.percent_complete", "text": "Progress %", "type": "number" },
+          { "selector": "progress.current_step", "text": "Current Step", "type": "string" },
+          { "selector": "result_data", "text": "Result", "type": "string" },
+          { "selector": "started_at", "text": "Started", "type": "timestamp" },
+          { "selector": "completed_at", "text": "Completed", "type": "timestamp" }
+        ],
+        "url_options": { "method": "GET", "data": "" }, "parser": "backend", "filters": []
+      }],
+      "title": "Actions — ${server_id}",
+      "type": "table"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["binarylane", "alerts", "audit", "actions"],
+  "templating": {
+    "list": [
+      {
+        "current": {}, "hide": 0, "includeAll": false, "label": "Datasource", "multi": false,
+        "name": "DS_BINARYLANE", "query": "yesoreyeram-infinity-datasource", "refresh": 1, "type": "datasource"
+      },
+      {
+        "current": {},
+        "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+        "hide": 0, "includeAll": false, "label": "Server", "multi": false, "name": "server_id",
+        "query": {
+          "columns": [
+            { "selector": "name", "text": "__text", "type": "string" },
+            { "selector": "id", "text": "__value", "type": "string" }
+          ],
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+          "filters": [], "format": "table", "parser": "backend", "refId": "A",
+          "root_selector": "servers", "source": "url", "type": "json",
+          "url": "https://api.binarylane.com.au/v2/servers?per_page=200",
+          "url_options": { "data": "", "method": "GET" }
+        },
+        "refresh": 1, "regex": "", "sort": 1, "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-1h", "to": "now" },
+  "timezone": "browser",
+  "title": "BinaryLane — Alerts & Actions",
+  "uid": "bl-alerts-actions",
+  "version": 1
+}

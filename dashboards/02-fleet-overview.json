@@ -1,0 +1,509 @@
+{
+  "__inputs": [{ "name": "DS_BINARYLANE", "label": "BinaryLane", "type": "datasource", "pluginId": "yesoreyeram-infinity-datasource" }],
+  "__requires": [
+    { "type": "grafana", "id": "grafana", "name": "Grafana", "version": "10.0.0" },
+    { "type": "datasource", "id": "yesoreyeram-infinity-datasource", "name": "Infinity", "version": "2.0.0" },
+    { "type": "panel", "id": "stat", "name": "Stat", "version": "" },
+    { "type": "panel", "id": "table", "name": "Table", "version": "" },
+    { "type": "panel", "id": "timeseries", "name": "Time series", "version": "" }
+  ],
+  "annotations": { "list": [] },
+  "description": "Account-wide fleet view — all servers, data transfer pool, host status, and per-server trend graphs.",
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [{ "title": "BinaryLane mPanel", "type": "link", "url": "https://home.binarylane.com.au", "targetBlank": true, "icon": "external link" }],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100, "title": "🖥️ Fleet Summary", "type": "row"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+      "description": "Total number of servers in this account.",
+      "fieldConfig": {
+        "defaults": { "color": { "fixedColor": "blue", "mode": "fixed" }, "unit": "short", "decimals": 0,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "id": 1,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto",
+        "reduceOptions": { "calcs": ["count"], "fields": "/^ID$/", "values": false }, "textMode": "auto" },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+        "type": "json", "source": "url", "format": "table",
+        "url": "https://api.binarylane.com.au/v2/servers?per_page=200",
+        "root_selector": "servers",
+        "columns": [{ "selector": "id", "text": "ID", "type": "number" }],
+        "url_options": { "method": "GET", "data": "" }, "parser": "backend", "filters": []
+      }],
+      "title": "Total Servers",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+      "description": "Servers currently in 'active' status. Uses filterByValue transformation — avoids Infinity backend filter engine bug.",
+      "fieldConfig": {
+        "defaults": { "color": { "fixedColor": "green", "mode": "fixed" }, "unit": "short", "decimals": 0,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "id": 2,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto",
+        "reduceOptions": { "calcs": ["count"], "fields": "/^ID$/", "values": false }, "textMode": "auto" },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+        "type": "json", "source": "url", "format": "table",
+        "url": "https://api.binarylane.com.au/v2/servers?per_page=200",
+        "root_selector": "servers",
+        "columns": [
+          { "selector": "id", "text": "ID", "type": "number" },
+          { "selector": "status", "text": "Status", "type": "string" }
+        ],
+        "url_options": { "method": "GET", "data": "" }, "parser": "backend", "filters": []
+      }],
+      "transformations": [{
+        "id": "filterByValue",
+        "options": {
+          "type": "include", "match": "all",
+          "filters": [{ "fieldName": "Status", "config": { "id": "equal", "options": { "value": "active" } } }]
+        }
+      }],
+      "title": "Active Servers",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+      "description": "Servers currently powered off (but not cancelled). Uses filterByValue transformation.",
+      "fieldConfig": {
+        "defaults": { "color": { "fixedColor": "yellow", "mode": "fixed" }, "unit": "short", "decimals": 0,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "yellow", "value": null }] }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+      "id": 3,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto",
+        "reduceOptions": { "calcs": ["count"], "fields": "/^ID$/", "values": false }, "textMode": "auto" },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+        "type": "json", "source": "url", "format": "table",
+        "url": "https://api.binarylane.com.au/v2/servers?per_page=200",
+        "root_selector": "servers",
+        "columns": [
+          { "selector": "id", "text": "ID", "type": "number" },
+          { "selector": "status", "text": "Status", "type": "string" }
+        ],
+        "url_options": { "method": "GET", "data": "" }, "parser": "backend", "filters": []
+      }],
+      "transformations": [{
+        "id": "filterByValue",
+        "options": {
+          "type": "include", "match": "all",
+          "filters": [{ "fieldName": "Status", "config": { "id": "equal", "options": { "value": "off" } } }]
+        }
+      }],
+      "title": "Powered Off",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+      "fieldConfig": {
+        "defaults": { "color": { "fixedColor": "purple", "mode": "fixed" }, "unit": "short", "decimals": 0,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "purple", "value": null }] }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+      "id": 4,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto",
+        "reduceOptions": { "calcs": ["sum"], "fields": "/^vCPUs$/", "values": false }, "textMode": "auto" },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+        "type": "json", "source": "url", "format": "table",
+        "url": "https://api.binarylane.com.au/v2/servers?per_page=200",
+        "root_selector": "servers",
+        "columns": [{ "selector": "vcpus", "text": "vCPUs", "type": "number" }],
+        "url_options": { "method": "GET", "data": "" }, "parser": "backend", "filters": []
+      }],
+      "title": "Total vCPUs",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+      "fieldConfig": {
+        "defaults": { "color": { "fixedColor": "orange", "mode": "fixed" }, "unit": "decmbytes", "decimals": 0,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "orange", "value": null }] }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+      "id": 5,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto",
+        "reduceOptions": { "calcs": ["sum"], "fields": "/^Memory MB$/", "values": false }, "textMode": "auto" },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+        "type": "json", "source": "url", "format": "table",
+        "url": "https://api.binarylane.com.au/v2/servers?per_page=200",
+        "root_selector": "servers",
+        "columns": [{ "selector": "memory", "text": "Memory MB", "type": "number" }],
+        "url_options": { "method": "GET", "data": "" }, "parser": "backend", "filters": []
+      }],
+      "title": "Total RAM",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+      "fieldConfig": {
+        "defaults": { "color": { "fixedColor": "text", "mode": "fixed" }, "unit": "decgbytes", "decimals": 0,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "text", "value": null }] }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+      "id": 6,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto",
+        "reduceOptions": { "calcs": ["sum"], "fields": "/^Disk GB$/", "values": false }, "textMode": "auto" },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+        "type": "json", "source": "url", "format": "table",
+        "url": "https://api.binarylane.com.au/v2/servers?per_page=200",
+        "root_selector": "servers",
+        "columns": [{ "selector": "disk", "text": "Disk GB", "type": "number" }],
+        "url_options": { "method": "GET", "data": "" }, "parser": "backend", "filters": []
+      }],
+      "title": "Total Disk",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 101, "title": "🖥️ Server Inventory", "type": "row"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+      "description": "Full server inventory. IPv4 uses dot notation (networks.v4.0.ip_address) — bracket notation [0] is not supported by the Infinity backend parser. Host Uptime uses dtdhms unit (days + h:mm:ss from ms input).",
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "filterable": true, "inspect": false } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Status" }, "properties": [
+            { "id": "mappings", "value": [
+              { "type": "value", "options": { "active":  { "color": "green",  "index": 0, "text": "● active"   } } },
+              { "type": "value", "options": { "new":     { "color": "blue",   "index": 1, "text": "◐ building" } } },
+              { "type": "value", "options": { "off":     { "color": "yellow", "index": 2, "text": "○ off"      } } },
+              { "type": "value", "options": { "archive": { "color": "red",    "index": 3, "text": "✕ archived" } } }
+            ]},
+            { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+            { "id": "custom.width", "value": 110 }
+          ]},
+          { "matcher": { "id": "byName", "options": "Memory" }, "properties": [{ "id": "unit", "value": "decmbytes" }] },
+          { "matcher": { "id": "byName", "options": "Disk" },   "properties": [{ "id": "unit", "value": "decgbytes" }] },
+          { "matcher": { "id": "byName", "options": "Host Uptime" }, "properties": [
+            { "id": "unit", "value": "dtdhms" },
+            { "id": "custom.width", "value": 160 }
+          ]},
+          { "matcher": { "id": "byName", "options": "Created" }, "properties": [{ "id": "unit", "value": "dateTimeAsLocal" }] },
+          { "matcher": { "id": "byName", "options": "Host Status" }, "properties": [
+            { "id": "mappings", "value": [
+              { "type": "special", "options": { "match": "null",  "result": { "color": "green", "index": 0, "text": "OK" } } },
+              { "type": "special", "options": { "match": "empty", "result": { "color": "green", "index": 1, "text": "OK" } } }
+            ]},
+            { "id": "custom.cellOptions", "value": { "type": "color-background" } }
+          ]}
+        ]
+      },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 6 },
+      "id": 7,
+      "options": { "cellHeight": "sm", "footer": { "show": false }, "showHeader": true, "sortBy": [{ "desc": false, "displayName": "Name" }] },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+        "type": "json", "source": "url", "format": "table",
+        "url": "https://api.binarylane.com.au/v2/servers?per_page=200",
+        "root_selector": "servers",
+        "columns": [
+          { "selector": "id",                      "text": "ID",          "type": "number" },
+          { "selector": "name",                    "text": "Name",        "type": "string" },
+          { "selector": "status",                  "text": "Status",      "type": "string" },
+          { "selector": "region.slug",             "text": "Region",      "type": "string" },
+          { "selector": "vcpus",                   "text": "vCPUs",       "type": "number" },
+          { "selector": "memory",                  "text": "Memory",      "type": "number" },
+          { "selector": "disk",                    "text": "Disk",        "type": "number" },
+          { "selector": "image.name",              "text": "OS",          "type": "string" },
+          { "selector": "networks.v4.0.ip_address","text": "IPv4",        "type": "string" },
+          { "selector": "host.display_name",       "text": "Host",        "type": "string" },
+          { "selector": "host.uptime_ms",          "text": "Host Uptime", "type": "number" },
+          { "selector": "host.status_page",        "text": "Host Status", "type": "string" },
+          { "selector": "created_at",              "text": "Created",     "type": "timestamp" }
+        ],
+        "url_options": { "method": "GET", "data": "" }, "parser": "backend", "filters": []
+      }],
+      "title": "Server Inventory",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 18 },
+      "id": 103,
+      "title": "📈 Fleet Trends — ${server_name}",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+      "description": "Average CPU utilisation over time for the selected server.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "smooth", "lineWidth": 2, "showPoints": "never", "spanNulls": false },
+          "decimals": 1, "max": 100, "min": 0, "unit": "percent",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 70 }, { "color": "red", "value": 90 }] }
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 19 },
+      "id": 20,
+      "options": { "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+        "type": "json", "source": "url", "format": "timeseries",
+        "url": "https://api.binarylane.com.au/v2/samplesets/${server_id}?data_interval=${interval}&start=${__from:date:iso}&end=${__to:date:iso}&per_page=200",
+        "root_selector": "sample_sets",
+        "columns": [
+          { "selector": "period.end",              "text": "Time",  "type": "timestamp" },
+          { "selector": "average.cpu_usage_percent","text": "CPU %", "type": "number" }
+        ],
+        "url_options": { "method": "GET", "data": "" }, "parser": "backend", "filters": []
+      }],
+      "title": "CPU Usage %",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+      "description": "Memory used in bytes over time. Requires mPanel Memory Graph agent on the server.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "smooth", "lineWidth": 2, "showPoints": "never", "spanNulls": false },
+          "decimals": 0, "min": 0, "unit": "bytes",
+          "noValue": "Agent not installed"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 19 },
+      "id": 21,
+      "options": { "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+        "type": "json", "source": "url", "format": "timeseries",
+        "url": "https://api.binarylane.com.au/v2/samplesets/${server_id}?data_interval=${interval}&start=${__from:date:iso}&end=${__to:date:iso}&per_page=200",
+        "root_selector": "sample_sets",
+        "columns": [
+          { "selector": "period.end",                    "text": "Time",       "type": "timestamp" },
+          { "selector": "average.memory_usage_bytes",    "text": "Memory",     "type": "number" }
+        ],
+        "url_options": { "method": "GET", "data": "" }, "parser": "backend", "filters": []
+      }],
+      "title": "Memory Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+      "description": "Network inbound and outbound throughput in kbps.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 15, "lineInterpolation": "smooth", "lineWidth": 2, "showPoints": "never", "spanNulls": false },
+          "decimals": 1, "min": 0, "unit": "kbits"
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Incoming" }, "properties": [{ "id": "color", "value": { "fixedColor": "#73BF69", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Outgoing" }, "properties": [{ "id": "color", "value": { "fixedColor": "#F2CC0C", "mode": "fixed" } }] }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 27 },
+      "id": 22,
+      "options": { "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+          "type": "json", "source": "url", "format": "timeseries",
+          "url": "https://api.binarylane.com.au/v2/samplesets/${server_id}?data_interval=${interval}&start=${__from:date:iso}&end=${__to:date:iso}&per_page=200",
+          "root_selector": "sample_sets",
+          "columns": [
+            { "selector": "period.end",                       "text": "Time",     "type": "timestamp" },
+            { "selector": "average.network_incoming_kbps",    "text": "Incoming", "type": "number" }
+          ],
+          "url_options": { "method": "GET", "data": "" }, "parser": "backend", "filters": []
+        },
+        {
+          "refId": "B",
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+          "type": "json", "source": "url", "format": "timeseries",
+          "url": "https://api.binarylane.com.au/v2/samplesets/${server_id}?data_interval=${interval}&start=${__from:date:iso}&end=${__to:date:iso}&per_page=200",
+          "root_selector": "sample_sets",
+          "columns": [
+            { "selector": "period.end",                       "text": "Time",     "type": "timestamp" },
+            { "selector": "average.network_outgoing_kbps",    "text": "Outgoing", "type": "number" }
+          ],
+          "url_options": { "method": "GET", "data": "" }, "parser": "backend", "filters": []
+        }
+      ],
+      "title": "Network Throughput (kbps)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+      "description": "Disk read/write throughput in kbps.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "smooth", "lineWidth": 2, "showPoints": "never", "spanNulls": false },
+          "decimals": 1, "min": 0, "unit": "kbits"
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Read"  }, "properties": [{ "id": "color", "value": { "fixedColor": "#5794F2", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Write" }, "properties": [{ "id": "color", "value": { "fixedColor": "#FF9830", "mode": "fixed" } }] }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 27 },
+      "id": 23,
+      "options": { "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+          "type": "json", "source": "url", "format": "timeseries",
+          "url": "https://api.binarylane.com.au/v2/samplesets/${server_id}?data_interval=${interval}&start=${__from:date:iso}&end=${__to:date:iso}&per_page=200",
+          "root_selector": "sample_sets",
+          "columns": [
+            { "selector": "period.end",                "text": "Time",  "type": "timestamp" },
+            { "selector": "average.storage_read_kbps", "text": "Read",  "type": "number" }
+          ],
+          "url_options": { "method": "GET", "data": "" }, "parser": "backend", "filters": []
+        },
+        {
+          "refId": "B",
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+          "type": "json", "source": "url", "format": "timeseries",
+          "url": "https://api.binarylane.com.au/v2/samplesets/${server_id}?data_interval=${interval}&start=${__from:date:iso}&end=${__to:date:iso}&per_page=200",
+          "root_selector": "sample_sets",
+          "columns": [
+            { "selector": "period.end",                 "text": "Time",  "type": "timestamp" },
+            { "selector": "average.storage_write_kbps", "text": "Write", "type": "number" }
+          ],
+          "url_options": { "method": "GET", "data": "" }, "parser": "backend", "filters": []
+        }
+      ],
+      "title": "Storage Throughput (kbps)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 35 },
+      "id": 102, "title": "📊 Data Transfer Pool", "type": "row"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+      "description": "Data transfer usage across all servers for the current billing period.",
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "filterable": true } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Used GB" },   "properties": [{ "id": "unit", "value": "decgbytes" }, { "id": "custom.width", "value": 100 }] },
+          { "matcher": { "id": "byName", "options": "Quota GB" },  "properties": [{ "id": "unit", "value": "decgbytes" }, { "id": "custom.width", "value": 100 }] },
+          { "matcher": { "id": "byName", "options": "Period End" },"properties": [{ "id": "unit", "value": "dateTimeAsLocal" }, { "id": "custom.width", "value": 180 }] },
+          { "matcher": { "id": "byName", "options": "Expires" },   "properties": [{ "id": "unit", "value": "dateTimeAsLocal" }, { "id": "custom.width", "value": 180 }] }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 36 },
+      "id": 8,
+      "options": { "cellHeight": "sm", "footer": {
+        "show": true, "reducer": ["sum"], "fields": ["Used GB", "Quota GB"], "enablePagination": false
+      }, "showHeader": true, "sortBy": [{ "desc": true, "displayName": "Used GB" }] },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+        "type": "json", "source": "url", "format": "table",
+        "url": "https://api.binarylane.com.au/v2/data_usages/current?per_page=200",
+        "root_selector": "data_usages",
+        "columns": [
+          { "selector": "server_id",                          "text": "Server ID", "type": "number" },
+          { "selector": "current_transfer_usage_gigabytes",   "text": "Used GB",   "type": "number" },
+          { "selector": "transfer_gigabytes",                 "text": "Quota GB",  "type": "number" },
+          { "selector": "transfer_period_end",                "text": "Period End","type": "timestamp" },
+          { "selector": "expires",                            "text": "Expires",   "type": "timestamp" }
+        ],
+        "url_options": { "method": "GET", "data": "" }, "parser": "backend", "filters": []
+      }],
+      "title": "Data Transfer by Server",
+      "type": "table"
+    }
+  ],
+  "refresh": "5m",
+  "schemaVersion": 39,
+  "tags": ["binarylane", "fleet", "overview"],
+  "templating": {
+    "list": [
+      {
+        "current": {}, "hide": 0, "includeAll": false, "label": "Datasource", "multi": false,
+        "name": "DS_BINARYLANE", "query": "yesoreyeram-infinity-datasource", "refresh": 1, "type": "datasource"
+      },
+      {
+        "current": {},
+        "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+        "hide": 0, "includeAll": false, "label": "Server (for trends)", "multi": false, "name": "server_id",
+        "query": {
+          "columns": [
+            { "selector": "name", "text": "__text",  "type": "string" },
+            { "selector": "id",   "text": "__value", "type": "string" }
+          ],
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+          "filters": [], "format": "table", "parser": "backend", "refId": "A",
+          "root_selector": "servers", "source": "url", "type": "json",
+          "url": "https://api.binarylane.com.au/v2/servers?per_page=200",
+          "url_options": { "data": "", "method": "GET" }
+        },
+        "refresh": 2, "regex": "", "sort": 1, "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+        "hide": 2, "name": "server_name",
+        "query": {
+          "columns": [
+            { "selector": "name", "text": "__text",  "type": "string" },
+            { "selector": "name", "text": "__value", "type": "string" }
+          ],
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BINARYLANE}" },
+          "filters": [], "format": "table", "parser": "backend", "refId": "A",
+          "root_selector": "servers", "source": "url", "type": "json",
+          "url": "https://api.binarylane.com.au/v2/servers?per_page=200",
+          "url_options": { "data": "", "method": "GET" }
+        },
+        "refresh": 2, "regex": "", "sort": 1, "type": "query"
+      },
+      {
+        "current": { "selected": false, "text": "30 Minutes", "value": "half-hour" },
+        "hide": 0, "includeAll": false, "label": "Resolution", "multi": false, "name": "interval",
+        "options": [
+          { "selected": false, "text": "5 Minutes",  "value": "five-minute" },
+          { "selected": true,  "text": "30 Minutes", "value": "half-hour"   },
+          { "selected": false, "text": "4 Hours",    "value": "four-hour"   },
+          { "selected": false, "text": "1 Day",      "value": "day"         },
+          { "selected": false, "text": "1 Week",     "value": "week"        }
+        ],
+        "query": "five-minute,half-hour,four-hour,day,week", "type": "custom"
+      }
+    ]
+  },
+  "time": { "from": "now-24h", "to": "now" },
+  "timezone": "browser",
+  "title": "BinaryLane — Fleet Overview",
+  "uid": "bl-fleet-overview",
+  "version": 2
+}
