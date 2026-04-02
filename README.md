@@ -4,6 +4,38 @@ Grafana dashboards for BinaryLane cloud servers using the [Infinity datasource](
 
 ---
 
+> ## ⚠️ Proof of Concept — Read Before Deploying
+>
+> **This project is a proof of concept.** Querying the BinaryLane API directly from
+> Grafana has a significant security implication that you must understand before use:
+>
+> **BinaryLane API tokens are full-account credentials.** There is currently no way to
+> issue a read-only or scoped token — any token you generate has complete access to
+> your account, including destructive operations (server deletion, rebuilds, etc.).
+> A leaked or compromised token is a serious incident, not just a data exposure.
+>
+> **Before deploying this stack, you must:**
+>
+> - **Never commit the token to source control.** Use `.env` (already gitignored) or
+>   a secrets manager. Verify with `git log --all --full-diff -p | grep -i bl_api_token`
+>   before pushing to any remote.
+> - **Restrict Grafana access tightly.** Anyone who can open the Grafana UI and inspect
+>   panel queries, browser network traffic, or datasource config can recover the token.
+>   Enforce authentication — do not use `GF_AUTH_ANONYMOUS_ENABLED=true` in any
+>   deployment that holds a real token.
+> - **Protect the Grafana host.** The token lives in Grafana's encrypted secrets store
+>   on disk. Treat the Grafana host with the same care as any system that holds
+>   account credentials. Restrict SSH access and keep the host patched.
+> - **Rotate the token if exposure is suspected.** Generate a new token in mPanel
+>   immediately and update your deployment. There is no rate-limiting or IP restriction
+>   on BinaryLane API tokens.
+> - **Do not expose Grafana to the public internet** without authentication, a reverse
+>   proxy with access controls, or VPN/allowlist restrictions in front of it.
+>
+> If any of the above controls are not in place, do not use a real API token.
+
+---
+
 ## Dashboards
 
 | File | Title | Refresh | What it shows |
